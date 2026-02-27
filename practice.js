@@ -144,3 +144,24 @@ function twosum(target) {
 }
 
 twosum(9);
+
+
+// 2678. Number of Senior Citizens
+// You are given a 0-indexed array of strings details. Each element of details provides
+// information about a given passenger compressed into a string of length 15. The system
+// is 1-indexed, so the first character is at index 1. The age of the passenger is
+// inferred from characters at indices 12 and 13. Return the number of passengers who
+// are strictly more than 60 years old.
+
+var countSeniors = function (details) {
+    let count = 0;
+    for (let i = 0; i < details.length;) {
+        let passenger = details[i];
+        let age = parseInt(passenger[11] + passenger[12]);
+        if (age > 60) {
+            count++;
+        }
+        i++;
+    }
+    return count;
+};
