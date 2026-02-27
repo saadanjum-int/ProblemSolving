@@ -165,3 +165,42 @@ var countSeniors = function (details) {
     }
     return count;
 };
+
+
+// 283. Move Zeroes
+// Given an integer array nums, move all 0's to the end of it while maintaining
+// the relative order of the non-zero elements. Note that you must do this in-place
+// without making a copy of the array.
+
+var moveZeroes = function (nums) {
+    for (let i = 0; i < nums.length;) {
+        if (nums[i] === 0) {
+            nums.splice(i, 1);  // remove zero from current position
+            nums.push(0);        // add it to the end
+        } else {
+            i++;
+        }
+    }
+};
+
+
+// 392. Is Subsequence
+// Given two strings s and t, return true if s is a subsequence of t, or false otherwise.
+// A subsequence of a string is a new string that is formed from the original string by
+// deleting some (can be none) of the characters without disturbing the relative positions
+// of the remaining characters.
+
+var isSubsequence = function (s, t) {
+    let i = 0;
+    for (let j = 0; j < t.length;) {
+        for (; i < s.length;) {
+            if (s[i] === t[j]) {
+                i++;
+                break;
+            }
+            break;
+        }
+        j++;
+    }
+    return i === s.length;
+};
