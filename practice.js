@@ -204,3 +204,260 @@ var isSubsequence = function (s, t) {
     }
     return i === s.length;
 };
+
+/**
+ * ---------------2 March---------------------------------
+ * LeetCode #315 - Count of Smaller Numbers After Self (Hard)
+ *
+ * PROBLEM:
+ * Given an integer array nums, return an array counts where counts[i]
+ * is the number of smaller elements to the right of nums[i].
+ *
+ * APPROACH:
+ * We create an empty result array outside the loops.
+ * The outer loop fixes the current element at index i.
+ * The inner loop always starts from i+1 so it only looks at elements
+ * to the right of i. For every element at j that is smaller than
+ * nums[i] we increment a counter. Once the inner loop finishes
+ * we push that counter into our result array and move i forward.
+ * We avoided using .map() and instead manually pushed to keep
+ * full control over the logic.
+ */
+function countSmaller(nums) {
+    let counts = [];
+
+    for (let i = 0; i < nums.length; i++) {
+        let counter = 0;
+        for (let j = i + 1; j < nums.length; j++) {
+            if (nums[j] < nums[i]) {
+                counter++;
+            }
+        }
+        counts.push(counter);
+    }
+
+    return counts;
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #520 - Detect Capital Use (Easy)
+ *
+ * PROBLEM:
+ * Given a string word, return true if capitalization is used correctly.
+ * Valid cases: all caps, all lowercase, or only first letter capitalized.
+ *
+ * APPROACH:
+ * We split into two branches based on the first letter.
+ * If the first letter is uppercase we have two valid sub-cases —
+ * either every single letter in the word is uppercase, or every
+ * letter after the first is lowercase. We check both using .every()
+ * and if either passes we return true.
+ * If the first letter is lowercase there is only one valid case —
+ * every remaining letter must also be lowercase. If .every() passes
+ * we return true, otherwise we fall through to return false.
+ */
+function detectCapitalUse(word) {
+    if (word[0] === word[0].toUpperCase()) {
+        if (word.split('').every(c => c === c.toUpperCase()) ||
+            word.slice(1).split('').every(c => c === c.toLowerCase())) {
+            return true;
+        }
+    } else {
+        if (word.slice(1).split('').every(c => c === c.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #278 - First Bad Version (Easy)
+ *
+ * PROBLEM:
+ * Given n versions where every version after the first bad one is also
+ * bad, find the first bad version while minimizing API calls.
+ *
+ * APPROACH:
+ * We use iterative binary search with left starting at 1 and right at n.
+ * Each iteration we calculate mid and call isBadVersion on it.
+ * If mid is bad we set right = mid and not mid-1 because mid itself
+ * could be the first bad version and we must not exclude it.
+ * If mid is good the first bad must be strictly after mid so we
+ * set left = mid+1. We keep halving the range until left and right
+ * meet — that position is our first bad version.
+ */
+function solution(isBadVersion) {
+    return function (n) {
+        let left = 1;
+        let right = n;
+
+        while (left < right) {
+            let mid = Math.floor((left + right) / 2);
+            if (isBadVersion(mid)) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        return left;
+    };
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #274 - H-Index (Medium)
+ *
+ * PROBLEM:
+ * Given a citations array, return the maximum h such that h papers
+ * each have been cited at least h times.
+ *
+ * APPROACH:
+ * We sort the array in descending order so the most cited papers
+ * come first. We keep a position counter starting at 0 outside the loop.
+ * The loop goes through each citation and checks if the citation value
+ * is greater than or equal to the current position. If yes we increment
+ * position — this means one more paper qualifies. If the citation drops
+ * below position we break immediately because all remaining citations
+ * will be even smaller due to the sort. The final value of position
+ * is our h-index because it represents how many papers have at least
+ * that many citations.
+ */
+function hIndex(citations) {
+    citations.sort((a, b) => b - a);
+
+    let position = 0;
+
+    for (let i = 0; i < citations.length; i++) {
+        if (citations[i] >= position) {
+            position++;
+        } else {
+            break;
+        }
+    }
+
+    return position;
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #263 - Ugly Number (Easy)
+ *
+ * PROBLEM:
+ * Return true if n is an ugly number — a positive integer whose only
+ * prime factors are 2, 3, and 5.
+ *
+ * APPROACH:
+ * We first handle the edge case of n <= 0 which can never be ugly.
+ * Then we divide n by 2 repeatedly until it is no longer divisible,
+ * then do the same for 3, then for 5. After all three while loops
+ * if n has been reduced to exactly 1 it means all prime factors were
+ * 2, 3, or 5 and nothing else — so it is ugly. If n is anything other
+ * than 1 it means another prime factor exists and we return false.
+ */
+function isUgly(n) {
+    if (n <= 0) return false;
+
+    while (n % 2 === 0) n = n / 2;
+    while (n % 3 === 0) n = n / 3;
+    while (n % 5 === 0) n = n / 5;
+
+    return n === 1;
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #70 - Climbing Stairs (Easy)
+ *
+ * PROBLEM:
+ * You can climb 1 or 2 steps at a time. Given n steps, return the
+ * number of distinct ways to reach the top.
+ *
+ * APPROACH:
+ * NOTE: The original approach of dividing by 2 does not account for
+ * all distinct combinations of 1 and 2 steps. The correct approach
+ * is dynamic programming — the number of ways to reach step n equals
+ * the number of ways to reach step n-1 (then take 1 step) plus the
+ * number of ways to reach step n-2 (then take 2 steps). This follows
+ * the Fibonacci pattern. We start with base cases: 1 way to reach
+ * step 1, and 2 ways to reach step 2. Then we build up from there.
+ */
+var climbStairs = function (n) {
+    if (n === 1) return 1;
+    let prev2 = 1;
+    let prev1 = 2;
+    for (let i = 3; i <= n; i++) {
+        let curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+};
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #128 - Longest Consecutive Sequence (Medium)
+ *
+ * PROBLEM:
+ * Given an unsorted array of integers, return the length of the
+ * longest consecutive elements sequence.
+ *
+ * APPROACH:
+ * We first sort the array in ascending order so consecutive numbers
+ * end up next to each other. We use two nested loops — the outer loop
+ * fixes a starting position i and the inner loop j starts at the same
+ * index i. Inside the inner loop there are two if checks. The first
+ * checks if nums[j] equals nums[i] which handles the starting element
+ * of each sequence. The second checks if nums[j] equals nums[j-1]+1
+ * which means the sequence is continuing. If neither condition is met
+ * we break out of the inner loop. After breaking we compare temp with
+ * maxLen and update if larger, then reset temp to zero. The outer loop
+ * then moves i forward and the process repeats for the next potential
+ * sequence start.
+ */
+function longestConsecutive(nums) {
+    nums.sort((a, b) => a - b);
+
+    let maxLen = 0;
+    let temp = 0;
+
+    for (let i = 0; i < nums.length; i++) {
+        temp = 0;
+        for (let j = i; j < nums.length; j++) {
+            if (nums[j] === nums[i]) {
+                temp++;
+            } else if (nums[j] === nums[j - 1] + 1) {
+                temp++;
+            } else {
+                break;
+            }
+        }
+
+        if (temp > maxLen) {
+            maxLen = temp;
+        }
+        temp = 0;
+    }
+
+    return maxLen;
+}
