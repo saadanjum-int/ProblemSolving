@@ -461,3 +461,161 @@ function longestConsecutive(nums) {
 
     return maxLen;
 }
+
+/**-------------------March 3---------------------
+ * LeetCode #169 - Majority Element (Easy)
+ *
+ * PROBLEM:
+ * Given an array, find the element that appears more than n/2 times.
+ *
+ * APPROACH:
+ * Instead of counting every element iteratively, we use divide and conquer.
+ * The key insight is that if you split the array in half, the majority element
+ * of the full array must be the majority in at least one of the halves.
+ * We recursively split down until we hit a single element — a single element
+ * is trivially the majority of itself so we return it.
+ * On the way back up we compare the left and right candidates.
+ * If both halves agree on the same element we return it immediately.
+ * If they disagree we count both candidates across the current subarray
+ * and return whichever appears more. The recursion handles all the splitting
+ * and the merge logic handles picking the winner at each level.
+ */
+function majorityElement(nums) {
+    function helper(lo, hi) {
+        if (lo === hi) return nums[lo];
+
+        const mid = Math.floor((lo + hi) / 2);
+        const left = helper(lo, mid);
+        const right = helper(mid + 1, hi);
+
+        if (left === right) return left;
+
+        let lc = 0, rc = 0;
+        for (let i = lo; i <= hi; i++) {
+            if (nums[i] === left) lc++;
+            if (nums[i] === right) rc++;
+        }
+
+        return lc > rc ? left : right;
+    }
+
+    return helper(0, nums.length - 1);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #215 - Kth Largest Element in an Array (Medium)
+ *
+ * PROBLEM:
+ * Find the kth largest element in an array without sorting the whole array.
+ *
+ * APPROACH:
+ * We use Quickselect — instead of sorting everything like Quicksort does,
+ * we only recurse on the one side that actually contains our answer.
+ * We pick the last element as pivot, then partition the array so everything
+ * smaller than pivot goes left and everything larger goes right.
+ * After partitioning we check how many elements are on the right side.
+ * If right_count equals k-1 the pivot itself is our answer.
+ * If right_count is greater than k-1 our answer is in the right half
+ * so we recurse there with the same k.
+ * If right_count is less than k-1 our answer is in the left half —
+ * here k needs to shrink by right_count + 1 because those elements
+ * on the right plus the pivot are already accounted for and eliminated.
+ */
+function findKthLargest(nums, k) {
+    function partition(lo, hi) {
+        const pivot = nums[hi];
+        let i = lo;
+        for (let j = lo; j < hi; j++) {
+            if (nums[j] < pivot) {
+                [nums[i], nums[j]] = [nums[j], nums[i]];
+                i++;
+            }
+        }
+        [nums[i], nums[hi]] = [nums[hi], nums[i]];
+        return i;
+    }
+
+    function quickselect(lo, hi, k) {
+        if (lo === hi) return nums[lo];
+
+        const p = partition(lo, hi);
+        const rightCount = hi - p;
+
+        if (rightCount === k - 1) {
+            return nums[p];
+        } else if (rightCount > k - 1) {
+            return quickselect(p + 1, hi, k);
+        } else {
+            return quickselect(lo, p - 1, k - rightCount - 1);
+        }
+    }
+
+    return quickselect(0, nums.length - 1, k);
+}
+
+
+// ─────────────────────────────────────────────────────────────────
+
+
+/**
+ * LeetCode #315 - Count of Smaller Numbers After Self (Hard)
+ *
+ * PROBLEM:
+ * For each element, count how many elements to its right are smaller than it.
+ *
+ * APPROACH:
+ * We piggyback on merge sort to count as we sort.
+ * During the merge step, whenever we pick an element from the right subarray
+ * over an element from the left subarray, it means that right element is
+ * smaller than everything remaining on the left. Since left elements
+ * originally appeared before right elements in the array, we just found
+ * exactly how many left elements this right element is smaller than.
+ * That count is mid - i + 1, the number of remaining left elements at
+ * that moment in the merge.
+ * The critical problem is that after sorting, elements lose their original
+ * positions so we wouldn't know where to record each count.
+ * The fix is to carry each element as a pair with its original index
+ * throughout the entire sort — no matter how much the array gets shuffled
+ * we always know which index to update in our counts array.
+ */
+function countSmaller(nums) {
+    const n = nums.length;
+    const counts = new Array(n).fill(0);
+    let pairs = nums.map((val, idx) => [val, idx]);
+
+    function merge(lo, mid, hi) {
+        let i = lo, j = mid + 1;
+        const result = [];
+
+        while (i <= mid && j <= hi) {
+            if (pairs[j][0] < pairs[i][0]) {
+                counts[pairs[j][1]] += (mid - i + 1);
+                result.push(pairs[j]);
+                j++;
+            } else {
+                result.push(pairs[i]);
+                i++;
+            }
+        }
+
+        while (i <= mid) { result.push(pairs[i]); i++; }
+        while (j <= hi) { result.push(pairs[j]); j++; }
+
+        pairs.splice(lo, hi - lo + 1, ...result);
+    }
+
+    function mergesort(lo, hi) {
+        if (lo >= hi) return;
+        const mid = Math.floor((lo + hi) / 2);
+        mergesort(lo, mid);
+        mergesort(mid + 1, hi);
+        merge(lo, mid, hi);
+    }
+
+    mergesort(0, n - 1);
+    return counts;
+}
